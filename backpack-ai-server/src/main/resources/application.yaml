@@ -1,0 +1,13 @@
+server:
+  port: 8089
+spring:
+  openai:
+    api-key: ${SPRING_AI_OPENAI_API_KEY}
+  ai:
+    chat:
+      client:
+        enabled: false
+logging:
+  level:
+    root: DEBUG
+    org.springframework.web: DEBUG
