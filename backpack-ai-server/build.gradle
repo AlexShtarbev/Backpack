@@ -1,5 +1,11 @@
 plugins {
     id 'java'
+    // https://github.com/etiennestuder/gradle-jooq-plugin/blob/main/README.md
+    id 'nu.studer.jooq' version '8.2.1'
+    // https://contribute.liquibase.com/extensions-integrations/directory/integration-docs/gradle/
+    id 'org.liquibase.gradle' version '2.2.1'
+    // https://github.com/avast/gradle-docker-compose-plugin
+    id "com.avast.gradle.docker-compose" version "0.17.5"
 }
 
 group = 'org.alexshtarbev.backpack'
@@ -23,8 +29,45 @@ dependencies {
     implementation 'org.springframework.ai:spring-ai-openai-spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    implementation 'org.jooq:jooq:3.19.1'
+
+    liquibaseRuntime 'org.liquibase:liquibase-core:4.16.1'
+    liquibaseRuntime 'info.picocli:picocli:4.6.1'
+    liquibaseRuntime 'org.liquibase:liquibase-groovy-dsl:3.0.2'
+    liquibaseRuntime "org.postgresql:postgresql:42.7.2"
+
+    jooqGenerator 'org.postgresql:postgresql:42.7.2'
 }
 
 test {
     useJUnitPlatform()
 }
+
+test {
+    systemProperty "java.util.logging.manager", "org.jboss.logmanager.LogManager"
+}
+compileJava {
+    options.encoding = 'UTF-8'
+    options.compilerArgs << '-parameters'
+}
+
+compileTestJava {
+    options.encoding = 'UTF-8'
+}
+
+sourceSets.main.java.srcDirs = ['build/generated', 'build/classes/java/main', 'build/postgresql', 'src/main/java']
+
+apply from: 'liquibase.gradle'
+apply from: 'jooq.gradle'
+
+dockerCompose {
+    useComposeFiles = ['docker/docker-compose.yaml']
+    isRequiredBy(generateJooq)
+    environment.put 'EXPOSED_PORT', '5434'
+    environment.put "HTTP_PORT", "8082"
+    environment.put "VOLUME", "/tmp/" + UUID.randomUUID()
+}
+
+update.dependsOn(composeUp)
+generateJooq.dependsOn(update)
