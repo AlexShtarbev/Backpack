@@ -1,5 +1,7 @@
 package org.alexshtarbev.backpack;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.boot.context.properties.bind.Name;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,10 +14,17 @@ import java.util.Map;
 @RestController
 @RequestMapping("/backpack")
 class BackpackController {
+	private static final Logger logger = LoggerFactory.getLogger(BackpackController.class);
+
 	private final ChatClient openAiChatClient;
 
 	public BackpackController(@Name(BackpackConfig.OPEN_AI_CHAT_CLIENT) ChatClient openAiChatClient) {
 		this.openAiChatClient = openAiChatClient;
+	}
+
+	@GetMapping("/log")
+	void log(@RequestParam(value = "message", defaultValue = "Tell me a joke") String message) {
+		logger.info("{}", message);
 	}
 
 	@GetMapping("/message")

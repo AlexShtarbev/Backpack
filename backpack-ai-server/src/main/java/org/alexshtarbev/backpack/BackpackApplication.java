@@ -13,5 +13,4 @@ public class BackpackApplication {
         SpringApplication.run(BackpackApplication.class, args);
     }
 
-
 }
