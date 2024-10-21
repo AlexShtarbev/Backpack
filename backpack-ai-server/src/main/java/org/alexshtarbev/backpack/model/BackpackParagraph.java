@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 @JsonSerialize
 public record BackpackParagraph(
-        String paragraph,
+        String content,
         String summary,
         String context
 ) {

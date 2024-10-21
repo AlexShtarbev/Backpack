@@ -31,6 +31,11 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
     implementation 'org.jooq:jooq:3.19.1'
+    // https://mvnrepository.com/artifact/com.zaxxer/HikariCP
+    implementation 'com.zaxxer:HikariCP:6.0.0'
+    implementation 'org.postgresql:postgresql:42.7.2'
+    implementation 'org.liquibase:liquibase-core:4.16.1'
+    implementation "org.springframework.data:spring-data-jdbc"
 
     liquibaseRuntime 'org.liquibase:liquibase-core:4.16.1'
     liquibaseRuntime 'info.picocli:picocli:4.6.1'
@@ -66,7 +71,8 @@ dockerCompose {
     isRequiredBy(generateJooq)
     environment.put 'EXPOSED_PORT', '5434'
     environment.put "HTTP_PORT", "8082"
-    environment.put "VOLUME", "/tmp/" + UUID.randomUUID()
+    environment.put "VOLUME", "/tmp/backpack/" + UUID.randomUUID()
+    removeVolumes true
 }
 
 update.dependsOn(composeUp)

@@ -1,8 +1,8 @@
 version: "3"
 
 services:
-  timescale:
-    image: timescale/timescaledb:latest-pg16
+  postgres-pgvector:
+    image: pgvector/pgvector:0.7.4-pg17
     healthcheck:
       test: "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""
       interval: 5s
@@ -16,4 +16,8 @@ services:
       - "${EXPOSED_PORT}:5432"
     volumes:
       - ./postgres-extensions/extensions.sql:/docker-entrypoint-initdb.d/extensions.sql
-      - ./postgres-volume:/var/lib/postgresql/data
+      - type: bind
+        source: ${VOLUME}
+        target: /var/lib/postgresql/data
+        bind:
+          create_host_path: true

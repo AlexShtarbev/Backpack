@@ -1,6 +1,6 @@
 package org.alexshtarbev.backpack;
 
-import static org.alexshtarbev.backpack.BackpackConfig.OPEN_AI_TEXT_EMBEDDING_3_TEXT_SMALL;
+import static org.alexshtarbev.backpack.conifg.BackpackConfig.OPEN_AI_TEXT_EMBEDDING_3_TEXT_SMALL;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,7 +30,7 @@ public class BackpackService {
     public EmbeddingResponse getEmbeddingsForBackpackParagraph() {
         List<BackpackParagraph> paragraphResponse = readFileIntoParagraphRecord();
         BackpackParagraph firstParagraph = paragraphResponse.get(0);
-        return openAiEmbeddingModel.embedForResponse(List.of(firstParagraph.paragraph()));
+        return openAiEmbeddingModel.embedForResponse(List.of(firstParagraph.content()));
     }
 
     private List<BackpackParagraph> readFileIntoParagraphRecord() {

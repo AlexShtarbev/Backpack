@@ -1,6 +1,9 @@
 server:
   port: 8089
 spring:
+  liquibase:
+    change-log: ${LIQUIBASE_CHANGELOG_PATH:migrations/changelog-root.xml}
+    url: ${DATASOURCE_URL:jdbc:postgresql://localhost:5432/postgres}
   openai:
     api-key: ${SPRING_AI_OPENAI_API_KEY}
   ai:
@@ -11,3 +14,13 @@ logging:
   level:
     root: DEBUG
     org.springframework.web: DEBUG
+
+backpack:
+  datasource:
+    url: ${DATASOURCE_URL:jdbc:postgresql://localhost:5432/postgres}
+    username: ${DATASOURCE_USERNAME:postgres}
+    password: ${DATASOURCE_PASSWORD:password}
+    hikari:
+      maximumPoolSize: ${MAX_HIKARI_THREADPOOL_SIZE:30}
+      maxLifetime: ${MAX_HIKARI_LIFETIME:30000} # 1 minute by default
+      poolName: ${HIKARI_POOL_NAME:BackpackHikariPool}
