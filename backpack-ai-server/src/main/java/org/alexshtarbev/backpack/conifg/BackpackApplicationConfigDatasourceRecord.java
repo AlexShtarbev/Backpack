@@ -5,11 +5,7 @@ import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 @ConfigurationProperties
 public record BackpackApplicationConfigDatasourceRecord(
-        String url,
-        String username,
-        String password,
-
-        @NestedConfigurationProperty
-        BackpackApplicationConfigHikariRecord hikari
-) {
-}
+    String url,
+    String username,
+    String password,
+    @NestedConfigurationProperty BackpackApplicationConfigHikariRecord hikari) {}

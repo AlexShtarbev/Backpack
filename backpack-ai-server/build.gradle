@@ -1,64 +1,98 @@
+buildscript {
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		// https://plugins.gradle.org/plugin/org.springframework.boot
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:3.3.3")
+	}
+}
+
 plugins {
-    id 'java'
-    // https://github.com/etiennestuder/gradle-jooq-plugin/blob/main/README.md
-    id 'nu.studer.jooq' version '8.2.1'
-    // https://contribute.liquibase.com/extensions-integrations/directory/integration-docs/gradle/
-    id 'org.liquibase.gradle' version '2.2.1'
-    // https://github.com/avast/gradle-docker-compose-plugin
-    id "com.avast.gradle.docker-compose" version "0.17.5"
+	id 'java'
+	// https://github.com/etiennestuder/gradle-jooq-plugin/blob/main/README.md
+	id 'nu.studer.jooq' version '8.2.1'
+	// https://contribute.liquibase.com/extensions-integrations/directory/integration-docs/gradle/
+	id 'org.liquibase.gradle' version '2.2.1'
+	// https://github.com/avast/gradle-docker-compose-plugin
+	id "com.avast.gradle.docker-compose" version "0.17.5"
+	id "org.springframework.boot" version "3.3.4"
+	id "com.diffplug.spotless" version "7.0.0.BETA2"
 }
 
 group = 'org.alexshtarbev.backpack'
 version = '1.0-SNAPSHOT'
 
+bootJar {
+	destinationDirectory = file("target/")
+}
+
 repositories {
-    mavenCentral()
-    maven { url 'https://repo.spring.io/milestone' }
-    maven { url 'https://repo.spring.io/snapshot' }
+	mavenCentral()
+	maven { url 'https://repo.spring.io/milestone' }
+	maven { url 'https://repo.spring.io/snapshot' }
 }
 
 dependencies {
-    testImplementation platform('org.junit:junit-bom:5.10.0')
-    testImplementation 'org.junit.jupiter:junit-jupiter'
+	testImplementation platform('org.junit:junit-bom:5.10.0')
+	testImplementation 'org.junit.jupiter:junit-jupiter'
 
-    implementation platform("org.springframework.ai:spring-ai-bom:1.0.0-SNAPSHOT")
-    implementation platform("org.springframework.boot:spring-boot-starter-parent:3.3.3")
+	implementation platform("org.springframework.ai:spring-ai-bom:1.0.0-SNAPSHOT")
+	implementation platform("org.springframework.boot:spring-boot-starter-parent:3.3.3")
 
-    // Replace the following with the starter dependencies of specific modules you wish to use
-    implementation 'org.springframework.ai:spring-ai-openai'
-    implementation 'org.springframework.ai:spring-ai-openai-spring-boot-starter'
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	// Replace the following with the starter dependencies of specific modules you wish to use
+	implementation 'org.springframework.ai:spring-ai-openai'
+	implementation 'org.springframework.ai:spring-ai-openai-spring-boot-starter'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
-    implementation 'org.jooq:jooq:3.19.1'
-    // https://mvnrepository.com/artifact/com.zaxxer/HikariCP
-    implementation 'com.zaxxer:HikariCP:6.0.0'
-    implementation 'org.postgresql:postgresql:42.7.2'
-    implementation 'org.liquibase:liquibase-core:4.16.1'
-    implementation "org.springframework.data:spring-data-jdbc"
+	implementation 'org.jooq:jooq:3.19.1'
+	// https://mvnrepository.com/artifact/com.zaxxer/HikariCP
+	implementation 'com.zaxxer:HikariCP:6.0.0'
+	implementation 'org.postgresql:postgresql:42.7.2'
+	implementation 'org.liquibase:liquibase-core:4.16.1'
+	implementation "org.springframework.data:spring-data-jdbc"
 
-    liquibaseRuntime 'org.liquibase:liquibase-core:4.16.1'
-    liquibaseRuntime 'info.picocli:picocli:4.6.1'
-    liquibaseRuntime 'org.liquibase:liquibase-groovy-dsl:3.0.2'
-    liquibaseRuntime "org.postgresql:postgresql:42.7.2"
+	liquibaseRuntime 'org.liquibase:liquibase-core:4.16.1'
+	liquibaseRuntime 'info.picocli:picocli:4.6.1'
+	liquibaseRuntime 'org.liquibase:liquibase-groovy-dsl:3.0.2'
+	liquibaseRuntime "org.postgresql:postgresql:42.7.2"
 
-    jooqGenerator 'org.postgresql:postgresql:42.7.2'
+	jooqGenerator 'org.postgresql:postgresql:42.7.2'
+
+	// https://mvnrepository.com/artifact/commons-io/commons-io
+	implementation 'commons-io:commons-io:2.17.0'
+
+}
+
+spotless {
+	format 'misc', {
+		// define the files to apply `misc` to
+		target '*.gradle', '.gitattributes', '.gitignore'
+
+		// define the steps to apply to those files
+		trimTrailingWhitespace()
+		indentWithTabs() // or spaces. Takes an integer argument if you don't like 4
+		endWithNewline()
+	}
+	java {
+		// apply a specific flavor of google-java-format
+		googleJavaFormat()
+	}
 }
 
 test {
-    useJUnitPlatform()
+	useJUnitPlatform()
+	systemProperty "java.util.logging.manager", "org.jboss.logmanager.LogManager"
 }
 
-test {
-    systemProperty "java.util.logging.manager", "org.jboss.logmanager.LogManager"
-}
 compileJava {
-    options.encoding = 'UTF-8'
-    options.compilerArgs << '-parameters'
+	options.encoding = 'UTF-8'
+	options.compilerArgs << '-parameters'
 }
 
 compileTestJava {
-    options.encoding = 'UTF-8'
+	options.encoding = 'UTF-8'
 }
 
 sourceSets.main.java.srcDirs = ['build/generated', 'build/classes/java/main', 'build/postgresql', 'src/main/java']
@@ -67,12 +101,12 @@ apply from: 'liquibase.gradle'
 apply from: 'jooq.gradle'
 
 dockerCompose {
-    useComposeFiles = ['docker/docker-compose.yaml']
-    isRequiredBy(generateJooq)
-    environment.put 'EXPOSED_PORT', '5434'
-    environment.put "HTTP_PORT", "8082"
-    environment.put "VOLUME", "/tmp/backpack/" + UUID.randomUUID()
-    removeVolumes true
+	useComposeFiles = ['docker/docker-compose.yaml']
+	isRequiredBy(generateJooq)
+	environment.put 'EXPOSED_PORT', '5434'
+	environment.put "HTTP_PORT", "8082"
+	environment.put "VOLUME", "/tmp/backpack/" + UUID.randomUUID()
+	removeVolumes true
 }
 
 update.dependsOn(composeUp)
