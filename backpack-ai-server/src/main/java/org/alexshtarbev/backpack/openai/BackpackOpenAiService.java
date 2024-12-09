@@ -3,7 +3,8 @@ package org.alexshtarbev.backpack.openai;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import org.alexshtarbev.backpack.BackpackConfig;
+
+import org.alexshtarbev.backpack.conifg.BackpackConfig;
 import org.apache.commons.io.FileUtils;
 import org.springframework.ai.audio.transcription.AudioTranscription;
 import org.springframework.ai.audio.transcription.AudioTranscriptionPrompt;

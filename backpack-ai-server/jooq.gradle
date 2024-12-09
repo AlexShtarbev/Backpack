@@ -33,10 +33,18 @@ jooq {
 								includeExpression = '.*'
 								includeTypes = 'INET'
 							}
+							forcedType {
+								userType = "org.backpack.jooq.pgvector.Vector"
+								binding = "org.backpack.jooq.pgvector.PgVectorJooqBinding"
+								includeExpression = '.*'
+								includeTypes = 'vector'
+							}
 						}
 					}
 					generate {
 						deprecated = false
+						springAnnotations = true
+						springDao = true
 						records = true
 						immutablePojos = true
 						fluentSetters = true

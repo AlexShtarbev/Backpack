@@ -1,0 +1,3 @@
+rootProject.name = 'backpack'
+include 'pgvector-jooq-extension'
+include 'backpack-ai-server'

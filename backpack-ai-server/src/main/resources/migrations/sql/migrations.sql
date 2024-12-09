@@ -12,7 +12,7 @@ create table if not exists backpack.content (
 
 --changeset alex.shtarbev:3
 create table if not exists backpack.embedding (
-    content_id uuid not null,
+    content_id uuid not null primary key,
     embedding vector(1536)
 );
 

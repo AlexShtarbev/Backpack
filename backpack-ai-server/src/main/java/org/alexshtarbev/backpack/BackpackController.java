@@ -1,7 +1,9 @@
 package org.alexshtarbev.backpack;
 
+import java.util.List;
 import java.util.Map;
 import org.alexshtarbev.backpack.conifg.BackpackConfig;
+import org.alexshtarbev.backpack.model.BackpackParagraph;
 import org.alexshtarbev.backpack.openai.BackpackOpenAiService;
 import org.alexshtarbev.backpack.openai.BackpackTranscribeRequest;
 import org.slf4j.Logger;
@@ -30,7 +32,7 @@ class BackpackController {
     this.backpackService = backpackService;
   }
 
-  @GetMapping("/embed")
+  @GetMapping("/embed/query")
   EmbeddingResponse getEmbedding() {
     return backpackService.getEmbeddingsForBackpackParagraph();
   }
@@ -49,5 +51,13 @@ class BackpackController {
   @PostMapping("/transcribe")
   void transcribe(@RequestBody BackpackTranscribeRequest request) {
     openAiService.transcribeAndStore(request.inputFilePath(), request.destinationFilePath());
+  }
+
+  @PostMapping("/embed/store")
+  void embedStore(@RequestBody BackpackTranscribeRequest request) {
+    List<BackpackParagraph> paragraphResponse = backpackService.readFileIntoParagraphRecord();
+    BackpackParagraph firstParagraph = paragraphResponse.get(0);
+    var embeddingResponse = backpackService.getEmbeddingResponse(firstParagraph);
+    backpackService.upsertEmbeddingRecords(embeddingResponse, List.of(firstParagraph));
   }
 }
