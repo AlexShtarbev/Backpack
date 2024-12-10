@@ -2,8 +2,12 @@ package org.alexshtarbev.backpack;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+
 import org.alexshtarbev.backpack.conifg.BackpackConfig;
 import org.alexshtarbev.backpack.model.BackpackParagraph;
+import org.alexshtarbev.backpack.model.ContentEmbeddingResponse;
 import org.alexshtarbev.backpack.openai.BackpackOpenAiService;
 import org.alexshtarbev.backpack.openai.BackpackTranscribeRequest;
 import org.slf4j.Logger;
@@ -11,7 +15,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.embedding.EmbeddingResponse;
 import org.springframework.boot.context.properties.bind.Name;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/backpack")
@@ -32,7 +41,7 @@ class BackpackController {
     this.backpackService = backpackService;
   }
 
-  @GetMapping("/embed/query")
+  @GetMapping("/embed/file/query")
   EmbeddingResponse getEmbedding() {
     return backpackService.getEmbeddingsForBackpackParagraph();
   }
@@ -59,5 +68,10 @@ class BackpackController {
     BackpackParagraph firstParagraph = paragraphResponse.get(0);
     var embeddingResponse = backpackService.getEmbeddingResponse(firstParagraph);
     backpackService.upsertEmbeddingRecords(embeddingResponse, List.of(firstParagraph));
+  }
+
+  @GetMapping("/embed/query")
+  ContentEmbeddingResponse getContentEmbedding(@RequestParam(value = "contentId") String contentId) {
+    return backpackService.getContentEmbedding(UUID.fromString(contentId));
   }
 }

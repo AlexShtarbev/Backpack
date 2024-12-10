@@ -1,17 +1,13 @@
 package org.alexshtarbev.backpack.conifg;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
 import java.sql.SQLException;
+
 import javax.sql.DataSource;
 
 import org.alexshtarbev.bacpack.tables.daos.ContentDao;
-import org.alexshtarbev.bacpack.tables.daos.EmbeddingDao;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
-import org.jooq.impl.DefaultConfiguration;
 import org.springframework.ai.autoconfigure.openai.OpenAiConnectionProperties;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.document.MetadataMode;
@@ -27,6 +23,10 @@ import org.springframework.boot.autoconfigure.jdbc.JdbcConnectionDetails;
 import org.springframework.boot.autoconfigure.liquibase.LiquibaseDataSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 
 @Configuration
 public class BackpackConfig {
@@ -139,9 +139,4 @@ public class BackpackConfig {
     return new ContentDao(dslContext.configuration());
   }
 
-  @Bean
-  @Autowired
-  public EmbeddingDao getEmbeddingDao(DSLContext dslContext) {
-    return new EmbeddingDao(dslContext.configuration());
-  }
 }

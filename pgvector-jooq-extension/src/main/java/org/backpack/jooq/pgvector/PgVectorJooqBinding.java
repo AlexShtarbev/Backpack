@@ -95,15 +95,14 @@ public class PgVectorJooqBinding implements Binding<Object, Vector> {
     @Override
     public void get(BindingGetResultSetContext<Vector> ctx) throws SQLException {
         var resultSet = ctx.resultSet();
-        var vector = (Vector) resultSet.getObject(ctx.index());
-        ctx.value(new Vector(vector.vectors()));
+        ctx.value(converter().from(resultSet.getObject(ctx.index())));
     }
 
     @Override
     public void get(BindingGetStatementContext<Vector> ctx) throws SQLException {
-        var statement = ctx.statement();
-        var vectorAsString = statement.getString(ctx.index());
-        ctx.value(converter().from(vectorAsString));
+        try (var statement = ctx.statement()) {
+            ctx.value(converter().from(statement.getString(ctx.index())));
+        }
     }
 
     @Override
