@@ -10,6 +10,7 @@ import java.util.UUID;
 
 import org.alexshtarbev.backpack.model.BackpackParagraph;
 import org.alexshtarbev.backpack.model.ContentEmbeddingResponse;
+import org.alexshtarbev.bacpack.Tables;
 import org.alexshtarbev.bacpack.tables.daos.ContentDao;
 import org.alexshtarbev.bacpack.tables.pojos.Content;
 import org.backpack.jooq.pgvector.Vector;
@@ -81,12 +82,26 @@ public class BackpackService {
     }
 
     Optional<Content> maybeContent = contentDao.fetchOptionalById(contentId);
-    return maybeContent.map(content -> new ContentEmbeddingResponse(
-            contentId, content.getContent(),
-            content.getSummary(),
-            content.getContent(),
-            content.getEmbedding().vectors()))
+    return maybeContent.map(content -> getContentEmbeddingResponse(content))
             .orElse(null);
   }
 
+  public List<ContentEmbeddingResponse> fetchNearestVectorByCosineDistance(String query, int limit) {
+    var response = openAiEmbeddingModel.embed(query);
+    var result = contentDao.fetchNearestVectorByCosineDistance(Tables.CONTENT.EMBEDDING, new Vector(response), limit);
+    if (result.isEmpty()) {
+      return List.of();
+    }
+
+    return result.stream().map(this::getContentEmbeddingResponse).toList();
+  }
+
+  private ContentEmbeddingResponse getContentEmbeddingResponse(Content content) {
+    return new ContentEmbeddingResponse(
+            content.getId(),
+            content.getContent(),
+            content.getSummary(),
+            content.getContent(),
+            content.getEmbedding().vectors());
+  }
 }

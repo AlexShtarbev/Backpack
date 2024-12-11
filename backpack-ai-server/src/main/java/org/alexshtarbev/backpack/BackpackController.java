@@ -2,7 +2,6 @@ package org.alexshtarbev.backpack;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 import org.alexshtarbev.backpack.conifg.BackpackConfig;
@@ -73,5 +72,10 @@ class BackpackController {
   @GetMapping("/embed/query")
   ContentEmbeddingResponse getContentEmbedding(@RequestParam(value = "contentId") String contentId) {
     return backpackService.getContentEmbedding(UUID.fromString(contentId));
+  }
+
+  @GetMapping("/search/query")
+  List<ContentEmbeddingResponse> searchByQuery(@RequestParam(value = "query") String query) {
+    return backpackService.fetchNearestVectorByCosineDistance(query,5);
   }
 }

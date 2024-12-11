@@ -11,9 +11,16 @@ repositories {
 
 dependencies {
     implementation 'org.jooq:jooq:3.19.1'
+    // https://mvnrepository.com/artifact/org.jooq/jooq-codegen-maven
+    implementation 'org.jooq:jooq-codegen-maven:3.19.1'
+
 
     testImplementation platform('org.junit:junit-bom:5.9.1')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+tasks.withType(JavaCompile).each {
+    it.options.compilerArgs.add('--enable-preview')
 }
 
 task prepareKotlinBuildScriptModel {
