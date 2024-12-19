@@ -1,4 +1,2 @@
-#bin bash
-#echo "Running dockerd"
-#dockerd &
+#!/bin/bash
 java -jar /app.jar
