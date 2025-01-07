@@ -1,3 +1,5 @@
+version: "3"
+
 services:
   backpack-server:
     image: 'backpack-ai-server:latest'
@@ -6,3 +8,29 @@ services:
       - '8088:8089'
     environment:
       SPRING_AI_OPENAI_API_KEY: ${SPRING_AI_OPENAI_API_KEY} # https://docs.docker.com/compose/how-tos/environment-variables/variable-interpolation/
+      DATASOURCE_URL: jdbc:postgresql://postgres-pgvector:5432/postgres
+    volumes:
+      - ${COOKIES_FILE}:/cookies.txt
+    depends_on:
+      postgres-pgvector:
+        condition: service_healthy
+  postgres-pgvector:
+    image: pgvector/pgvector:0.7.4-pg17
+    healthcheck:
+      test: "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""
+      interval: 5s
+      retries: 5
+      timeout: 2s
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: postgres
+    ports:
+      - "${EXPOSED_PORT}:5432"
+    volumes:
+      - ./postgres-extensions/extensions.sql:/docker-entrypoint-initdb.d/extensions.sql
+      - type: bind
+        source: ${VOLUME}
+        target: /var/lib/postgresql/data
+        bind:
+          create_host_path: true

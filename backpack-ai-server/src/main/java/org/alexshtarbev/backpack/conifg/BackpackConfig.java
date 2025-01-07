@@ -68,7 +68,7 @@ public class BackpackConfig {
         openAiApi,
         MetadataMode.EMBED,
         OpenAiEmbeddingOptions.builder()
-            .withModel(OpenAiApi.EmbeddingModel.TEXT_EMBEDDING_3_SMALL.value)
+            .model(OpenAiApi.EmbeddingModel.TEXT_EMBEDDING_3_SMALL.value)
             .build());
   }
 
