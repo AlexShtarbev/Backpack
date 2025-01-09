@@ -57,10 +57,10 @@ public class BackpackOpenAiService {
   public AudioTranscriptionResponse getTranscription(FileSystemResource audioFile) {
     OpenAiAudioTranscriptionOptions transcriptionOptions =
         OpenAiAudioTranscriptionOptions.builder()
-            .withLanguage(OPEN_AI_TRANSCRIPTION_LANGUAGE)
+            .language(OPEN_AI_TRANSCRIPTION_LANGUAGE)
             //                .withPrompt("Ask not this, but ask that")
-            .withTemperature(0f)
-            .withResponseFormat(OPEN_AI_TRANSCRIPTION_FORMAT)
+            .temperature(0f)
+            .responseFormat(OPEN_AI_TRANSCRIPTION_FORMAT)
             .build();
 
     AudioTranscriptionPrompt transcriptionRequest =

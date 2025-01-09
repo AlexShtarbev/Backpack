@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.alexshtarbev.backpack.conifg.BackpackConfig;
+import org.alexshtarbev.backpack.download.BackpackYoutubeAudioDownloader;
 import org.alexshtarbev.backpack.model.BackpackParagraph;
 import org.alexshtarbev.backpack.model.ContentEmbeddingResponse;
 import org.alexshtarbev.backpack.openai.BackpackOpenAiService;
@@ -28,16 +29,18 @@ class BackpackController {
 
   private final ChatClient openAiChatClient;
   private final BackpackService backpackService;
-
   private final BackpackOpenAiService openAiService;
+  private final BackpackYoutubeAudioDownloader backpackYoutubeAudioDownloader;
 
   public BackpackController(
-      BackpackOpenAiService openAiService,
-      BackpackService backpackService,
-      @Name(BackpackConfig.OPEN_AI_CHAT_CLIENT) ChatClient openAiChatClient) {
+          BackpackOpenAiService openAiService,
+          BackpackService backpackService,
+          BackpackYoutubeAudioDownloader backpackYoutubeAudioDownloader,
+          @Name(BackpackConfig.OPEN_AI_CHAT_CLIENT) ChatClient openAiChatClient) {
     this.openAiChatClient = openAiChatClient;
     this.openAiService = openAiService;
     this.backpackService = backpackService;
+      this.backpackYoutubeAudioDownloader = backpackYoutubeAudioDownloader;
   }
 
   @GetMapping("/embed/file/query")
@@ -45,9 +48,9 @@ class BackpackController {
     return backpackService.getEmbeddingsForBackpackParagraph();
   }
 
-  @GetMapping("/log")
-  void log(@RequestParam(value = "message", defaultValue = "Tell me a joke") String message) {
-    logger.info("{}", message);
+  @GetMapping("/download")
+  void log(@RequestParam(value = "url") String url, @RequestParam(value = "fileName") String fileName) {
+    backpackYoutubeAudioDownloader.downloadYoutubeVideoAsAudioMp3(url, fileName);
   }
 
   @GetMapping("/message")

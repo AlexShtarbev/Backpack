@@ -66,7 +66,6 @@ dependencies {
 
 	// https://mvnrepository.com/artifact/commons-io/commons-io
 	implementation 'commons-io:commons-io:2.17.0'
-
 }
 
 //spotless {
@@ -117,7 +116,7 @@ dockerCompose {
 	environment.put 'EXPOSED_PORT', '5434'
 	environment.put "HTTP_PORT", "8082"
 	environment.put "VOLUME", "/tmp/backpack/" + UUID.randomUUID()
-	removeVolumes true
+	removeVolumes
 }
 
 update.dependsOn(composeUp)

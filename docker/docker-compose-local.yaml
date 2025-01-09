@@ -9,8 +9,11 @@ services:
     environment:
       SPRING_AI_OPENAI_API_KEY: ${SPRING_AI_OPENAI_API_KEY} # https://docs.docker.com/compose/how-tos/environment-variables/variable-interpolation/
       DATASOURCE_URL: jdbc:postgresql://postgres-pgvector:5432/postgres
+      AUDIO_DOWNLOAD_DIRECTORY: /tmp
+      AUDIO_DOWNLOAD_COOKIES: cookies.txt
     volumes:
       - ${COOKIES_FILE}:/cookies.txt
+      - /tmp:/tmp
     depends_on:
       postgres-pgvector:
         condition: service_healthy

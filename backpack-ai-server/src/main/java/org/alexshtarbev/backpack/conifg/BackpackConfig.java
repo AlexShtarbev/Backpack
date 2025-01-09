@@ -1,6 +1,8 @@
 package org.alexshtarbev.backpack.conifg;
 
 import java.sql.SQLException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.sql.DataSource;
 
@@ -35,6 +37,7 @@ public class BackpackConfig {
   public static final String OPEN_AI_CHAT_TRANSCRIPTION_MODEL = "OPEN_AI_CHAT_TRANSCRIPTION_MODEL";
   public static final String OPEN_AI_TEXT_EMBEDDING_3_TEXT_SMALL = "text-embedding-3-small";
   public static final String HIKARI_DSL_CONTEXT = "HIKARI_DSL_CONTEXT";
+  public static final String YOUTUBE_AUDIO_DOWNLOADER_EXECUTOR_SERVICE = "YOUTUBE_AUDIO_DOWNLOADER_EXECUTOR_SERVICE";
 
   @Bean
   public OpenAiApi getOpenAiApi(OpenAiConnectionProperties openAiConnectionProperties) {
@@ -139,4 +142,10 @@ public class BackpackConfig {
     return new ContentDao(dslContext.configuration());
   }
 
+  @Bean(YOUTUBE_AUDIO_DOWNLOADER_EXECUTOR_SERVICE)
+  public ExecutorService getYoutubeAudionDownloaderExecutorService(
+          BackpackApplicationConfigRecord applicationConfigRecord) {
+
+    return Executors.newFixedThreadPool(applicationConfigRecord.downloads().maxParallelDownloads());
+  }
 }

@@ -16,6 +16,10 @@ logging:
     org.springframework.web: DEBUG
 
 backpack:
+  downloads:
+    cookiesFilePath: ${AUDIO_DOWNLOAD_COOKIES:docker/yt-dlp/cookies.txt}
+    downloadsDirectory: ${AUDIO_DOWNLOAD_DIRECTORY:/tmp}
+    maxParallelDownloads: ${AUDIO_DOWNLOAD_MAX_PARALLEL:5}
   datasource:
     url: ${DATASOURCE_URL:jdbc:postgresql://localhost:5432/postgres}
     username: ${DATASOURCE_USERNAME:postgres}

@@ -1,6 +1,9 @@
 # Backpack
 Assistant to help you dissect and store information from videos, podcasts, texts and more.
 
+Installing yt-dlp:
+https://github.com/yt-dlp/yt-dlp/wiki/Installation
+
 To get cookies:
 ```
 yt-dlp -j --cookies-from-browser "firefox:/home/saleksandar/.mozilla/firefox/ry4b7uob.default-release/" --cookies cookies.txt https://www.youtube.com/watch?v=lAjVuUB9AkI
