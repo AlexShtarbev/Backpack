@@ -4,12 +4,18 @@ import static org.alexshtarbev.backpack.conifg.BackpackConfig.OPEN_AI_TEXT_EMBED
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.alexshtarbev.backpack.conifg.BackpackApplicationConfigRecord;
+import org.alexshtarbev.backpack.conifg.BackpackApplicationDownloadsConfig;
+import org.alexshtarbev.backpack.download.BackpackYoutubeAudioDownloader;
 import org.alexshtarbev.backpack.model.BackpackParagraph;
 import org.alexshtarbev.backpack.model.ContentEmbeddingResponse;
+import org.alexshtarbev.backpack.openai.BackpackOpenAiService;
+import org.alexshtarbev.backpack.model.BackpackTranscribeRequest;
 import org.alexshtarbev.bacpack.Tables;
 import org.alexshtarbev.bacpack.tables.daos.ContentDao;
 import org.alexshtarbev.bacpack.tables.pojos.Content;
@@ -25,17 +31,41 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Component
 public class BackpackService {
 
+  private final BackpackApplicationDownloadsConfig downloadsConfig;
+  private final BackpackYoutubeAudioDownloader backpackYoutubeAudioDownloader;
+  private final BackpackOpenAiService openAiService;
   private final ObjectMapper objectMapper;
   private final ContentDao contentDao;
   private final EmbeddingModel openAiEmbeddingModel;
 
   public BackpackService(
+          BackpackApplicationConfigRecord configRecord,
+          BackpackYoutubeAudioDownloader backpackYoutubeAudioDownloader,
+          BackpackOpenAiService openAiService,
           ObjectMapper objectMapper,
           ContentDao contentDao,
           @Name(OPEN_AI_TEXT_EMBEDDING_3_TEXT_SMALL) EmbeddingModel openAiEmbeddingModel) {
+
+    this.downloadsConfig = configRecord.download();
+    this.backpackYoutubeAudioDownloader = backpackYoutubeAudioDownloader;
+    this.openAiService = openAiService;
     this.objectMapper = objectMapper;
     this.contentDao = contentDao;
     this.openAiEmbeddingModel = openAiEmbeddingModel;
+  }
+
+  public void downloadAndTranscribe(BackpackTranscribeRequest request) {
+    String audioFilePath = getFilePath(request.audioFileName());
+    String transcriptionFilePath = getFilePath(request.transcriptionFileName());
+    backpackYoutubeAudioDownloader.downloadYoutubeVideoAsAudioMp3(
+            request.url(), audioFilePath, downloadsConfig.cookiesFilePath());
+    if (request.shouldDownload()) {
+      openAiService.transcribeAndStore(audioFilePath, transcriptionFilePath);
+    }
+  }
+
+  private String getFilePath(String fileName) {
+    return Paths.get(downloadsConfig.downloadsDirectory(), fileName).toString();
   }
 
   public EmbeddingResponse getEmbeddingsForBackpackParagraph() {

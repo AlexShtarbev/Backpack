@@ -9,9 +9,7 @@ import org.alexshtarbev.backpack.download.BackpackYoutubeAudioDownloader;
 import org.alexshtarbev.backpack.model.BackpackParagraph;
 import org.alexshtarbev.backpack.model.ContentEmbeddingResponse;
 import org.alexshtarbev.backpack.openai.BackpackOpenAiService;
-import org.alexshtarbev.backpack.openai.BackpackTranscribeRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.alexshtarbev.backpack.model.BackpackTranscribeRequest;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.embedding.EmbeddingResponse;
 import org.springframework.boot.context.properties.bind.Name;
@@ -25,7 +23,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/backpack")
 class BackpackController {
-  private static final Logger logger = LoggerFactory.getLogger(BackpackController.class);
 
   private final ChatClient openAiChatClient;
   private final BackpackService backpackService;
@@ -37,9 +34,10 @@ class BackpackController {
           BackpackService backpackService,
           BackpackYoutubeAudioDownloader backpackYoutubeAudioDownloader,
           @Name(BackpackConfig.OPEN_AI_CHAT_CLIENT) ChatClient openAiChatClient) {
-    this.openAiChatClient = openAiChatClient;
-    this.openAiService = openAiService;
-    this.backpackService = backpackService;
+
+      this.openAiChatClient = openAiChatClient;
+      this.openAiService = openAiService;
+      this.backpackService = backpackService;
       this.backpackYoutubeAudioDownloader = backpackYoutubeAudioDownloader;
   }
 
@@ -48,10 +46,10 @@ class BackpackController {
     return backpackService.getEmbeddingsForBackpackParagraph();
   }
 
-  @GetMapping("/download")
-  void log(@RequestParam(value = "url") String url, @RequestParam(value = "fileName") String fileName) {
-    backpackYoutubeAudioDownloader.downloadYoutubeVideoAsAudioMp3(url, fileName);
-  }
+//  @GetMapping("/download")
+//  void log(@RequestParam(value = "url") String url, @RequestParam(value = "fileName") String fileName) {
+//    backpackYoutubeAudioDownloader.downloadYoutubeVideoAsAudioMp3(url, fileName);
+//  }
 
   @GetMapping("/message")
   Map<String, String> completion(
@@ -61,11 +59,11 @@ class BackpackController {
 
   @PostMapping("/transcribe")
   void transcribe(@RequestBody BackpackTranscribeRequest request) {
-    openAiService.transcribeAndStore(request.inputFilePath(), request.destinationFilePath());
+    backpackService.downloadAndTranscribe(request);
   }
 
   @PostMapping("/embed/store")
-  void embedStore(@RequestBody BackpackTranscribeRequest request) {
+  void embedStore() {
     List<BackpackParagraph> paragraphResponse = backpackService.readFileIntoParagraphRecord();
     BackpackParagraph firstParagraph = paragraphResponse.get(0);
     var embeddingResponse = backpackService.getEmbeddingResponse(firstParagraph);

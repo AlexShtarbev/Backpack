@@ -146,6 +146,6 @@ public class BackpackConfig {
   public ExecutorService getYoutubeAudionDownloaderExecutorService(
           BackpackApplicationConfigRecord applicationConfigRecord) {
 
-    return Executors.newFixedThreadPool(applicationConfigRecord.downloads().maxParallelDownloads());
+    return Executors.newFixedThreadPool(applicationConfigRecord.download().maxParallelDownloads());
   }
 }

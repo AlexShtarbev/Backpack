@@ -4,47 +4,40 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import org.alexshtarbev.backpack.conifg.BackpackConfig;
 import org.apache.commons.io.FileUtils;
-import org.springframework.ai.audio.transcription.AudioTranscription;
-import org.springframework.ai.audio.transcription.AudioTranscriptionPrompt;
-import org.springframework.ai.audio.transcription.AudioTranscriptionResponse;
-import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.openai.OpenAiAudioTranscriptionModel;
-import org.springframework.ai.openai.OpenAiAudioTranscriptionOptions;
 import org.springframework.ai.openai.api.OpenAiAudioApi;
-import org.springframework.boot.context.properties.bind.Name;
+import org.springframework.ai.retry.RetryUtils;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
+import org.springframework.retry.support.RetryTemplate;
 import org.springframework.stereotype.Component;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
 public class BackpackOpenAiService {
 
-  public static final OpenAiAudioApi.TranscriptResponseFormat OPEN_AI_TRANSCRIPTION_FORMAT =
-      OpenAiAudioApi.TranscriptResponseFormat.VTT;
-
+  private static final RetryTemplate RETRY_TEMPLATE = RetryUtils.DEFAULT_RETRY_TEMPLATE;
   public static final String OPEN_AI_TRANSCRIPTION_LANGUAGE = "en";
 
-  private final ChatClient openAiChatClient;
-  private final OpenAiAudioTranscriptionModel openAiAudioTranscriptionModel;
+  private final ObjectMapper objectMapper;
+  private final OpenAiAudioApi openAiAudioApi;
 
   public BackpackOpenAiService(
-      @Name(BackpackConfig.OPEN_AI_CHAT_CLIENT) ChatClient openAiChatClient,
-      @Name(BackpackConfig.OPEN_AI_CHAT_TRANSCRIPTION_MODEL)
-          OpenAiAudioTranscriptionModel openAiAudioTranscriptionModel) {
-
-    this.openAiChatClient = openAiChatClient;
-    this.openAiAudioTranscriptionModel = openAiAudioTranscriptionModel;
+          ObjectMapper objectMapper,
+          OpenAiAudioApi openAiAudioApi) {
+      this.objectMapper = objectMapper;
+      this.openAiAudioApi = openAiAudioApi;
   }
 
   public void transcribeAndStore(String inputFilePath, String destinationFilePath) {
     FileSystemResource audioFile = new FileSystemResource(inputFilePath);
-    AudioTranscriptionResponse response = getTranscription(audioFile);
-    AudioTranscription audioTranscription = response.getResult();
+    OpenAiVerboseJsonResponse response = getTranscription(audioFile);
 
     try {
       FileUtils.writeStringToFile(
-          new File(destinationFilePath), audioTranscription.getOutput(), StandardCharsets.UTF_8);
+          new File(destinationFilePath), objectMapper.writeValueAsString(response), StandardCharsets.UTF_8);
 
     } catch (IOException ex) {
       throw new RuntimeException(
@@ -54,17 +47,36 @@ public class BackpackOpenAiService {
     }
   }
 
-  public AudioTranscriptionResponse getTranscription(FileSystemResource audioFile) {
-    OpenAiAudioTranscriptionOptions transcriptionOptions =
-        OpenAiAudioTranscriptionOptions.builder()
-            .language(OPEN_AI_TRANSCRIPTION_LANGUAGE)
-            //                .withPrompt("Ask not this, but ask that")
-            .temperature(0f)
-            .responseFormat(OPEN_AI_TRANSCRIPTION_FORMAT)
-            .build();
+  public OpenAiVerboseJsonResponse getTranscription(FileSystemResource audioFile) {
+    OpenAiAudioApi.TranscriptionRequest request = getVerboseJsonWithSegmentsTranscriptionRequest(audioFile);
 
-    AudioTranscriptionPrompt transcriptionRequest =
-        new AudioTranscriptionPrompt(audioFile, transcriptionOptions);
-    return openAiAudioTranscriptionModel.call(transcriptionRequest);
+    ResponseEntity<OpenAiVerboseJsonResponse> transcriptionEntity;
+    transcriptionEntity = RETRY_TEMPLATE.execute(
+            (ctx) -> openAiAudioApi.createTranscription(request, OpenAiVerboseJsonResponse.class));
+
+    if (!transcriptionEntity.getStatusCode().is2xxSuccessful()) {
+      throw new RuntimeException("Failed to transcribe");
+    }
+
+    return transcriptionEntity.getBody();
+  }
+
+  private OpenAiAudioApi.TranscriptionRequest getVerboseJsonWithSegmentsTranscriptionRequest(FileSystemResource audioFile) {
+    return OpenAiAudioApi.TranscriptionRequest.builder()
+            .withFile(this.toBytes(audioFile))
+            .withResponseFormat(OpenAiAudioApi.TranscriptResponseFormat.VERBOSE_JSON)
+            .withTemperature(0F)
+            .withLanguage(OPEN_AI_TRANSCRIPTION_LANGUAGE)
+            .withModel(OpenAiAudioApi.WhisperModel.WHISPER_1.getValue())
+            .withGranularityType(OpenAiAudioApi.TranscriptionRequest.GranularityType.SEGMENT)
+            .build();
+  }
+
+  private byte[] toBytes(Resource resource) {
+    try {
+      return resource.getInputStream().readAllBytes();
+    } catch (Exception var3) {
+      throw new IllegalArgumentException("Failed to read resource: " + resource, var3);
+    }
   }
 }
