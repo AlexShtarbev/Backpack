@@ -1,4 +1,4 @@
-package org.alexshtarbev.backpack.download;
+package org.alexshtarbev.backpack.service;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;

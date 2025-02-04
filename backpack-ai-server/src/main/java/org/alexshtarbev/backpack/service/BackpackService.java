@@ -1,4 +1,4 @@
-package org.alexshtarbev.backpack;
+package org.alexshtarbev.backpack.service;
 
 import static org.alexshtarbev.backpack.conifg.BackpackConfig.OPEN_AI_TEXT_EMBEDDING_3_TEXT_SMALL;
 
@@ -11,7 +11,6 @@ import java.util.UUID;
 
 import org.alexshtarbev.backpack.conifg.BackpackApplicationConfigRecord;
 import org.alexshtarbev.backpack.conifg.BackpackApplicationDownloadsConfig;
-import org.alexshtarbev.backpack.download.BackpackYoutubeAudioDownloader;
 import org.alexshtarbev.backpack.model.BackpackParagraph;
 import org.alexshtarbev.backpack.model.ContentEmbeddingResponse;
 import org.alexshtarbev.backpack.openai.BackpackOpenAiService;
@@ -112,8 +111,7 @@ public class BackpackService {
     }
 
     Optional<Content> maybeContent = contentDao.fetchOptionalById(contentId);
-    return maybeContent.map(content -> getContentEmbeddingResponse(content))
-            .orElse(null);
+    return maybeContent.map(this::getContentEmbeddingResponse).orElse(null);
   }
 
   public List<ContentEmbeddingResponse> fetchNearestVectorByCosineDistance(String query, int limit) {

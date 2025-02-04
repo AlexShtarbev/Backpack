@@ -5,11 +5,14 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.alexshtarbev.backpack.conifg.BackpackConfig;
-import org.alexshtarbev.backpack.download.BackpackYoutubeAudioDownloader;
+import org.alexshtarbev.backpack.service.BackpackYoutubeAudioDownloader;
 import org.alexshtarbev.backpack.model.BackpackParagraph;
 import org.alexshtarbev.backpack.model.ContentEmbeddingResponse;
 import org.alexshtarbev.backpack.openai.BackpackOpenAiService;
 import org.alexshtarbev.backpack.model.BackpackTranscribeRequest;
+import org.alexshtarbev.backpack.service.BackpackService;
+import org.alexshtarbev.backpack.service.SegmentAndParagraph;
+import org.alexshtarbev.backpack.service.TranscriptionStitchService;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.embedding.EmbeddingResponse;
 import org.springframework.boot.context.properties.bind.Name;
@@ -26,12 +29,14 @@ class BackpackController {
 
   private final ChatClient openAiChatClient;
   private final BackpackService backpackService;
+  private final TranscriptionStitchService transcriptionStitchService;
   private final BackpackOpenAiService openAiService;
   private final BackpackYoutubeAudioDownloader backpackYoutubeAudioDownloader;
 
   public BackpackController(
           BackpackOpenAiService openAiService,
           BackpackService backpackService,
+          TranscriptionStitchService transcriptionStitchService,
           BackpackYoutubeAudioDownloader backpackYoutubeAudioDownloader,
           @Name(BackpackConfig.OPEN_AI_CHAT_CLIENT) ChatClient openAiChatClient) {
 
@@ -39,6 +44,7 @@ class BackpackController {
       this.openAiService = openAiService;
       this.backpackService = backpackService;
       this.backpackYoutubeAudioDownloader = backpackYoutubeAudioDownloader;
+      this.transcriptionStitchService = transcriptionStitchService;
   }
 
   @GetMapping("/embed/file/query")
@@ -60,6 +66,11 @@ class BackpackController {
   @PostMapping("/transcribe")
   void transcribe(@RequestBody BackpackTranscribeRequest request) {
     backpackService.downloadAndTranscribe(request);
+  }
+
+  @PostMapping("/stitch")
+  List<SegmentAndParagraph> stitch() {
+    return transcriptionStitchService.stitch();
   }
 
   @PostMapping("/embed/store")
