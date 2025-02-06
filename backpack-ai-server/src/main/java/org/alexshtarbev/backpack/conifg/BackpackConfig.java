@@ -6,7 +6,9 @@ import java.util.concurrent.Executors;
 
 import javax.sql.DataSource;
 
-import org.alexshtarbev.bacpack.tables.daos.ContentDao;
+import org.alexshtarbev.bacpack.tables.daos.TranscriptionDao;
+import org.alexshtarbev.bacpack.tables.daos.TranscriptionParagraphDao;
+import org.alexshtarbev.bacpack.tables.daos.TranscriptionParagraphEmbeddingDao;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
@@ -76,50 +78,50 @@ public class BackpackConfig {
   }
 
   @Bean(HIKARI_DSL_CONTEXT)
-  public DSLContext getHikariDslContext(BackpackApplicationConfigRecord applicationConfigRecord)
+  public DSLContext getHikariDslContext(BackpackApplicationConfig applicationConfigRecord)
       throws SQLException {
     return DSL.using(getHikariDataSource(applicationConfigRecord), SQLDialect.POSTGRES);
   }
 
   @Bean
-  public DataSource getGlobalDataSource(BackpackApplicationConfigRecord applicationConfigRecord) {
+  public DataSource getGlobalDataSource(BackpackApplicationConfig applicationConfigRecord) {
     return getHikariDataSource(applicationConfigRecord);
   }
 
   @Bean
   @LiquibaseDataSource
   public DataSource getLiquibaseDataSource(
-      BackpackApplicationConfigRecord applicationConfigRecord) {
+      BackpackApplicationConfig applicationConfigRecord) {
     return getHikariDataSource(applicationConfigRecord);
   }
 
   @Bean
   public JdbcConnectionDetails jdbcConnectionDetails(
-      BackpackApplicationConfigRecord backpackApplicationConfigRecord) {
+      BackpackApplicationConfig backpackApplicationConfig) {
     return new JdbcConnectionDetails() {
       @Override
       public String getJdbcUrl() {
-        return backpackApplicationConfigRecord.datasource().url();
+        return backpackApplicationConfig.datasource().url();
       }
 
       @Override
       public String getUsername() {
-        return backpackApplicationConfigRecord.datasource().username();
+        return backpackApplicationConfig.datasource().username();
       }
 
       @Override
       public String getPassword() {
-        return backpackApplicationConfigRecord.datasource().password();
+        return backpackApplicationConfig.datasource().password();
       }
     };
   }
 
   private HikariDataSource getHikariDataSource(
-      BackpackApplicationConfigRecord applicationConfigRecord) {
+      BackpackApplicationConfig applicationConfigRecord) {
     return new HikariDataSource(getHikariConfig(applicationConfigRecord));
   }
 
-  public HikariConfig getHikariConfig(BackpackApplicationConfigRecord applicationConfigRecord) {
+  public HikariConfig getHikariConfig(BackpackApplicationConfig applicationConfigRecord) {
     HikariConfig config = new HikariConfig();
     config.setJdbcUrl(applicationConfigRecord.datasource().url());
     config.setUsername(applicationConfigRecord.datasource().username());
@@ -138,13 +140,25 @@ public class BackpackConfig {
 
   @Bean
   @Autowired
-  public ContentDao getContentDao(DSLContext dslContext) {
-    return new ContentDao(dslContext.configuration());
+  public TranscriptionDao getTranscriptionDao(DSLContext dslContext) {
+    return new TranscriptionDao(dslContext.configuration());
+  }
+
+  @Bean
+  @Autowired
+  public TranscriptionParagraphDao getParagraphDao(DSLContext dslContext) {
+    return new TranscriptionParagraphDao(dslContext.configuration());
+  }
+
+  @Bean
+  @Autowired
+  public TranscriptionParagraphEmbeddingDao getEmbeddingDao(DSLContext dslContext) {
+    return new TranscriptionParagraphEmbeddingDao(dslContext.configuration());
   }
 
   @Bean(YOUTUBE_AUDIO_DOWNLOADER_EXECUTOR_SERVICE)
   public ExecutorService getYoutubeAudionDownloaderExecutorService(
-          BackpackApplicationConfigRecord applicationConfigRecord) {
+          BackpackApplicationConfig applicationConfigRecord) {
 
     return Executors.newFixedThreadPool(applicationConfigRecord.download().maxParallelDownloads());
   }

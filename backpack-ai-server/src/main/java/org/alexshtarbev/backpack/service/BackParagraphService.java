@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.alexshtarbev.backpack.model.BackpackEmbeddingParagraphs;
+import org.alexshtarbev.backpack.model.BackpackParagraph;
 import org.alexshtarbev.backpack.openai.OpenAiVerboseJsonResponse;
 import org.springframework.stereotype.Component;
 
@@ -13,24 +14,24 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
-public class TranscriptionStitchService {
+public class BackParagraphService {
     private static final String TRANSCRIPTION_FILE_PATH = "test_files/anger_transcribe_formatted.json";
     private static final String PARAGRAPHS_FILE_PATH = "test_files/anger_text_split_for_embedding.json";
 
     private final ObjectMapper objectMapper;
 
-    public TranscriptionStitchService(ObjectMapper objectMapper) {
+    public BackParagraphService(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 
-    public List<SegmentAndParagraph> stitch() {
+    public List<BackpackParagraph> stitch() {
         var transcriptionResponse = readJsonFile(TRANSCRIPTION_FILE_PATH, new TypeReference<OpenAiVerboseJsonResponse>() {});
         var paragraphs = readJsonFile(PARAGRAPHS_FILE_PATH, new TypeReference<BackpackEmbeddingParagraphs>() {});
 
         int paragraphsIndex = 0;
         int paragraphOffset = 0;
         int segmentsIndex = 0;
-        List<SegmentAndParagraph> segmentsPerParagraph = new ArrayList<>();
+        var segmentsPerParagraph = new ArrayList<BackpackParagraph>();
 
         while (paragraphsIndex < paragraphs.paragraphs().size()) {
             var paragraph = paragraphs.paragraphs().get(paragraphsIndex);
@@ -71,7 +72,7 @@ public class TranscriptionStitchService {
                 }
             }
 
-            segmentsPerParagraph.add(new SegmentAndParagraph(segmentsList, paragraph));
+            segmentsPerParagraph.add(new BackpackParagraph("url", paragraph, segmentsList));
         }
 
         return segmentsPerParagraph;

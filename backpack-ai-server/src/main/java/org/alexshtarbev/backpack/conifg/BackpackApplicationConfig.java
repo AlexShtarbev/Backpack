@@ -4,6 +4,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 @ConfigurationProperties(value = "backpack")
-public record BackpackApplicationConfigRecord(
+public record BackpackApplicationConfig(
         @NestedConfigurationProperty BackpackApplicationDownloadsConfig download,
-        @NestedConfigurationProperty BackpackApplicationConfigDatasourceRecord datasource) {}
+        @NestedConfigurationProperty BackpackApplicationConfigDatasource datasource) {}

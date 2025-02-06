@@ -2,19 +2,15 @@ package org.alexshtarbev.backpack;
 
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import org.alexshtarbev.backpack.conifg.BackpackConfig;
-import org.alexshtarbev.backpack.service.BackpackYoutubeAudioDownloader;
 import org.alexshtarbev.backpack.model.BackpackParagraph;
-import org.alexshtarbev.backpack.model.ContentEmbeddingResponse;
-import org.alexshtarbev.backpack.openai.BackpackOpenAiService;
 import org.alexshtarbev.backpack.model.BackpackTranscribeRequest;
+import org.alexshtarbev.backpack.openai.BackpackOpenAiService;
 import org.alexshtarbev.backpack.service.BackpackService;
-import org.alexshtarbev.backpack.service.SegmentAndParagraph;
-import org.alexshtarbev.backpack.service.TranscriptionStitchService;
+import org.alexshtarbev.backpack.service.BackpackYoutubeAudioDownloader;
+import org.alexshtarbev.backpack.service.BackParagraphService;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.embedding.EmbeddingResponse;
 import org.springframework.boot.context.properties.bind.Name;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,14 +25,14 @@ class BackpackController {
 
   private final ChatClient openAiChatClient;
   private final BackpackService backpackService;
-  private final TranscriptionStitchService transcriptionStitchService;
+  private final BackParagraphService backParagraphService;
   private final BackpackOpenAiService openAiService;
   private final BackpackYoutubeAudioDownloader backpackYoutubeAudioDownloader;
 
   public BackpackController(
           BackpackOpenAiService openAiService,
           BackpackService backpackService,
-          TranscriptionStitchService transcriptionStitchService,
+          BackParagraphService backParagraphService,
           BackpackYoutubeAudioDownloader backpackYoutubeAudioDownloader,
           @Name(BackpackConfig.OPEN_AI_CHAT_CLIENT) ChatClient openAiChatClient) {
 
@@ -44,13 +40,13 @@ class BackpackController {
       this.openAiService = openAiService;
       this.backpackService = backpackService;
       this.backpackYoutubeAudioDownloader = backpackYoutubeAudioDownloader;
-      this.transcriptionStitchService = transcriptionStitchService;
+      this.backParagraphService = backParagraphService;
   }
 
-  @GetMapping("/embed/file/query")
-  EmbeddingResponse getEmbedding() {
-    return backpackService.getEmbeddingsForBackpackParagraph();
-  }
+//  @GetMapping("/embed/file/query")
+//  EmbeddingResponse getEmbedding() {
+//    return backpackService.getEmbeddingsForBackpackParagraph();
+//  }
 
 //  @GetMapping("/download")
 //  void log(@RequestParam(value = "url") String url, @RequestParam(value = "fileName") String fileName) {
@@ -64,30 +60,33 @@ class BackpackController {
   }
 
   @PostMapping("/transcribe")
-  void transcribe(@RequestBody BackpackTranscribeRequest request) {
-    backpackService.downloadAndTranscribe(request);
+  List<BackpackParagraph> transcribe(@RequestBody BackpackTranscribeRequest request) {
+    return backpackService.downloadAndTranscribe(request);
   }
 
   @PostMapping("/stitch")
-  List<SegmentAndParagraph> stitch() {
-    return transcriptionStitchService.stitch();
+  List<BackpackParagraph> stitch() {
+    List<BackpackParagraph> backpackParagraphs = backParagraphService.stitch();
+    backpackService.upsertParagraphRecords(backpackParagraphs);
+
+    return backpackParagraphs;
   }
 
-  @PostMapping("/embed/store")
-  void embedStore() {
-    List<BackpackParagraph> paragraphResponse = backpackService.readFileIntoParagraphRecord();
-    BackpackParagraph firstParagraph = paragraphResponse.get(0);
-    var embeddingResponse = backpackService.getEmbeddingResponse(firstParagraph);
-    backpackService.upsertEmbeddingRecords(embeddingResponse, List.of(firstParagraph));
-  }
+//  @PostMapping("/embed/store")
+//  void embedStore() {
+//    List<BackpackParagraph> paragraphResponse = backpackService.readFileIntoParagraphRecord();
+//    BackpackParagraph firstParagraph = paragraphResponse.get(0);
+//    var embeddingResponse = backpackService.getEmbeddingResponse(firstParagraph);
+//    backpackService.upsertEmbeddingRecords(embeddingResponse, List.of(firstParagraph));
+//  }
 
-  @GetMapping("/embed/query")
-  ContentEmbeddingResponse getContentEmbedding(@RequestParam(value = "contentId") String contentId) {
-    return backpackService.getContentEmbedding(UUID.fromString(contentId));
-  }
+//  @GetMapping("/embed/query")
+//  ContentEmbeddingResponse getContentEmbedding(@RequestParam(value = "contentId") String contentId) {
+//    return backpackService.getContentEmbedding(UUID.fromString(contentId));
+//  }
 
-  @GetMapping("/search/query")
-  List<ContentEmbeddingResponse> searchByQuery(@RequestParam(value = "query") String query) {
-    return backpackService.fetchNearestVectorByCosineDistance(query,5);
-  }
+//  @GetMapping("/search/query")
+//  List<ContentEmbeddingResponse> searchByQuery(@RequestParam(value = "query") String query) {
+//    return backpackService.fetchNearestVectorByCosineDistance(query,5);
+//  }
 }

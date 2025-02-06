@@ -1,6 +1,6 @@
 package org.alexshtarbev.backpack;
 
-import org.alexshtarbev.backpack.conifg.BackpackApplicationConfigRecord;
+import org.alexshtarbev.backpack.conifg.BackpackApplicationConfig;
 import org.springframework.ai.autoconfigure.openai.OpenAiAutoConfiguration;
 import org.springframework.ai.autoconfigure.openai.OpenAiConnectionProperties;
 import org.springframework.boot.SpringApplication;
@@ -16,7 +16,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
       JooqAutoConfiguration.class
     })
 @EnableConfigurationProperties({
-  BackpackApplicationConfigRecord.class,
+  BackpackApplicationConfig.class,
   OpenAiConnectionProperties.class
 })
 public class BackpackApplication {

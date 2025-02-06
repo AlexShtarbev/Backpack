@@ -6,11 +6,11 @@ import org.jooq.meta.TableDefinition;
 
 public class JavaGeneratorWithVectorSupport extends JavaGenerator {
 
-    private static final String CONTENT_TABLE = "content";
+    private static final String EMBEDDING_KEYWORD = "embedding";
 
     public static final String FETCH_COSINE_DISTANCE_WITH_LIMIT = """
-    public /* non-final */ <Z> List<%s> fetchNearestVectorByCosineDistance(
-            org.jooq.Field<Z> field, Vector value, int limit) {
+    public /* non-final */ List<?> fetchNearestVectorByCosineDistance(
+            org.jooq.Field<?> field, Vector value, int limit) {
         return ctx()
             .selectFrom(getTable())
             .orderBy(org.jooq.impl.DSL.condition(String.format("%%s<->'[%%s]'::vector", field.getName(), toString(value))))
@@ -31,8 +31,8 @@ public class JavaGeneratorWithVectorSupport extends JavaGenerator {
 
     @Override
     protected void generateDaoClassFooter(TableDefinition table, JavaWriter out) {
-        if (table.getTable().getName().equalsIgnoreCase(CONTENT_TABLE)) {
-            out.println(String.format(FETCH_COSINE_DISTANCE_WITH_LIMIT, "org.alexshtarbev.bacpack.tables.pojos.Content"));
+        if (table.getTable().getName().contains(EMBEDDING_KEYWORD)) {
+            out.println(String.format(FETCH_COSINE_DISTANCE_WITH_LIMIT));
         }
     }
 

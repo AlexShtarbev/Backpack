@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.FileUtils;
+import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.openai.api.OpenAiAudioApi;
 import org.springframework.ai.retry.RetryUtils;
 import org.springframework.core.io.FileSystemResource;
@@ -23,12 +25,15 @@ public class BackpackOpenAiService {
 
   private final ObjectMapper objectMapper;
   private final OpenAiAudioApi openAiAudioApi;
+  public final OpenAiChatModel openAiChatModel;
 
   public BackpackOpenAiService(
           ObjectMapper objectMapper,
-          OpenAiAudioApi openAiAudioApi) {
+          OpenAiAudioApi openAiAudioApi,
+          OpenAiChatModel openAiChatModel) {
       this.objectMapper = objectMapper;
       this.openAiAudioApi = openAiAudioApi;
+      this.openAiChatModel = openAiChatModel;
   }
 
   public void transcribeAndStore(String inputFilePath, String destinationFilePath) {
@@ -78,5 +83,11 @@ public class BackpackOpenAiService {
     } catch (Exception var3) {
       throw new IllegalArgumentException("Failed to read resource: " + resource, var3);
     }
+  }
+
+  public String promptAndGetText(String prompt) {
+    var response = openAiChatModel.call(new Prompt(prompt));
+
+    return response.getResult().getOutput().getText();
   }
 }

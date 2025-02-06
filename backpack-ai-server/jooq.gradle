@@ -24,7 +24,7 @@ jooq {
 						inputSchema = 'backpack'
 						forcedTypes {
 							forcedType {
-								name = 'varchar'
+								name = 'jsonb'
 								includeExpression = '.*'
 								includeTypes = 'JSONB?'
 							}
